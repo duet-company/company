@@ -2,7 +2,7 @@
   "name": "@duet-company/frontend",
   "version": "1.0.0",
   "private": true,
-  "description": "AI Data Labs - Frontend dashboard",
+  "description": "AI Data Labs - Frontend dashboard with modern CSS 2025",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -23,7 +23,9 @@
   "devDependencies": {
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
-    "tailwindcss": "^3.4.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2"
   }
 }
