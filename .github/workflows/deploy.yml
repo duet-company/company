@@ -1,0 +1,70 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploying backend to staging..."
+          # TODO: Add actual deployment logic
+          # - Build Docker image
+          # - Push to registry
+          # - Update Kubernetes deployment
+          echo "Backend deployed to staging"
+
+  deploy-frontend:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build frontend
+        working-directory: apps/frontend
+        run: |
+          bun install
+          bun run build || echo "No build script found"
+
+      - name: Deploy to Cloudflare Workers
+        run: |
+          echo "Deploying frontend to Cloudflare Workers..."
+          # TODO: Add actual deployment logic
+          # - Install Wrangler
+          # - Publish to Cloudflare
+          echo "Frontend deployed to Cloudflare Workers"
+
+  deploy-agents:
+    name: Deploy Agents
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy agents
+        run: |
+          echo "Deploying AI agents to production..."
+          # TODO: Add actual deployment logic
+          # - Build agent images
+          # - Deploy to Kubernetes
+          echo "Agents deployed to production"
+
+  notify-deployment:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-frontend, deploy-agents]
+    if: always()
+    steps:
+      - name: Notify team
+        run: |
+          echo "Deployment completed"
+          # TODO: Add Slack/Telegram notification

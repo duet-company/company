@@ -1,0 +1,68 @@
+name: Lint All
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    name: Lint All Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run Biome
+        uses: biomejs/setup-biome@v2
+        with:
+          version: latest
+
+      - name: Biome check all
+        run: biome check . --write=false
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Run Ruff on all Python files
+        run: ruff check .
+
+  format-check:
+    name: Check Code Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run Biome check
+        uses: biomejs/setup-biome@v2
+        with:
+          version: latest
+
+      - name: Biome format check
+        run: biome format --write=false .
+
+      - name: Install Black
+        run: pip install black
+
+      - name: Check Python formatting
+        run: black --check .

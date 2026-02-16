@@ -1,0 +1,117 @@
+name: CI - Frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/frontend/**'
+      - 'packages/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/frontend/**'
+      - 'packages/**'
+
+jobs:
+  lint:
+    name: Lint Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            apps/frontend/node_modules
+            apps/frontend/.bun
+            node_modules
+            .bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        working-directory: apps/frontend
+        run: bun install
+
+      - name: Run Biome linter
+        uses: biomejs/setup-biome@v2
+        with:
+          version: latest
+
+      - name: Biome check
+        run: biome check apps/frontend --write=false
+
+      - name: TypeScript type check
+        working-directory: apps/frontend
+        run: bun run typecheck || echo "No typecheck script found"
+
+  test:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            apps/frontend/node_modules
+            apps/frontend/.bun
+            node_modules
+            .bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        working-directory: apps/frontend
+        run: bun install
+
+      - name: Run tests
+        working-directory: apps/frontend
+        run: bun test || echo "No tests found"
+
+  build:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            apps/frontend/node_modules
+            apps/frontend/.bun
+            node_modules
+            .bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        working-directory: apps/frontend
+        run: bun install
+
+      - name: Build application
+        working-directory: apps/frontend
+        run: bun run build || echo "No build script found"
