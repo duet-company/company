@@ -2,9 +2,9 @@
 
 **AI-First Data Infrastructure - Hours to Production, Not Months**
 
-This is the official monorepo for Duet Company's AI Data Labs platform. It contains all company code including frontend, backend, AI agents, infrastructure, and documentation in a unified repository.
+This is the official monorepo for Duet Company. It contains **ALL company code, documentation, and resources** in a unified repository.
 
-## 🏗️ Monorepo Structure
+## 🏗️ Complete Monorepo Structure
 
 ```
 company/
@@ -20,7 +20,24 @@ company/
 │   ├── query/            # Query Agent (NL to SQL)
 │   ├── design/           # Design Agent (infrastructure automation)
 │   └── support/          # Support Agent (24/7 assistance)
-├── docs/                # Documentation
+├── docs/                 # Complete documentation
+│   ├── vision/           # Company vision, OKR, roadmap
+│   ├── api/              # API documentation
+│   ├── blog/             # Company blog content
+│   ├── playbook/         # SOPs, playbooks, onboarding
+│   └── users/            # User guides and tutorials
+├── skills/               # OpenClaw AI agent skills
+│   ├── company-skill.md
+│   ├── github-skill.md
+│   ├── project-skill.md
+│   ├── marketing-skill.md
+│   ├── sales-skill.md
+│   ├── data-skill.md
+│   ├── design-skill.md
+│   ├── query-skill.md
+│   ├── support-skill.md
+│   └── ops-skill.md
+├── kanboard/            # Task board and issue tracking
 ├── infrastructure/      # Infrastructure as Code
 ├── scripts/             # Build and automation scripts
 └── [monorepo config files]
@@ -130,12 +147,99 @@ bun run build
 - 24/7 customer assistance
 - Ticket routing
 
-## 🔗 Related Repositories
+### Documentation
 
-- **Company Website:** https://aidatalabs.ai (deployed from Cloudflare Workers)
-- **Documentation:** https://docs.aidatalabs.ai (deployed from `docs/` folder)
-- **Skills Repository:** https://github.com/duet-company/skills (OpenClaw skills)
-- **Vision & Strategy:** https://github.com/duet-company/vision (OKRs, roadmap)
+**Vision (docs/vision):**
+- Company vision and mission
+- OKRs (Objectives and Key Results)
+- Roadmap (16-week execution plan)
+
+**API (docs/api):**
+- API reference documentation
+- Endpoint specifications
+- Authentication guide
+
+**Blog (docs/blog):**
+- Company blog content
+- Technical articles
+- AI and data engineering insights
+
+**Playbook (docs/playbook):**
+- Standard Operating Procedures (SOPs)
+- Onboarding guides
+- Incident response procedures
+
+**Users (docs/users):**
+- Getting started guides
+- Tutorials
+- Troubleshooting
+
+### Skills (OpenClaw AI Agent Skills)
+
+The monorepo includes 10 OpenClaw-compatible skills for automated operations:
+
+**Company Operations:**
+- `company-skill.md` - Sprint status, OKR progress, business metrics
+- `github-skill.md` - Repository management, PRs, CI/CD
+- `project-skill.md` - Task breakdown, milestone coordination
+
+**Marketing & Sales:**
+- `marketing-skill.md` - Content generation, campaigns
+- `sales-skill.md` - Lead management, pipeline tracking
+
+**Technical:**
+- `data-skill.md` - Data engineering patterns
+- `design-skill.md` - Infrastructure automation
+- `query-skill.md` - Text-to-SQL with ClickHouse
+- `support-skill.md` - Customer service with RAG
+- `ops-skill.md` - Monitoring, CI/CD, incident response
+
+### Kanboard
+
+**Task Management:**
+- Kanban board for project tracking
+- Issue tracking
+- Sprint management
+- Task assignment
+
+### Infrastructure
+
+**Infrastructure as Code:**
+- Terraform configurations
+- Kubernetes manifests
+- Helm charts
+- CI/CD pipelines
+- Monitoring stack
+
+## 📚 Documentation
+
+- **Architecture:** See `docs/api/architecture.md`
+- **API Reference:** See `docs/api/`
+- **Vision & Strategy:** See `docs/vision/`
+- **Playbook:** See `docs/playbook/`
+- **User Guides:** See `docs/users/`
+- **Blog:** See `docs/blog/`
+- **Skills Documentation:** See `skills/README.md`
+
+## 🔗 External Repositories
+
+**Only ONE active repository:**
+
+- **company (this repo):** https://github.com/duet-company/company - Everything is here!
+
+**All other repositories are archived:**
+- vision → company/docs/vision
+- docs → company/docs
+- skills → company/skills
+- blog → company/docs/blog
+- playbook → company/docs/playbook
+- kanban → company/kanboard
+- kanboard → company/kanboard
+- infrastructure → company/infrastructure
+- backend → company/apps/backend
+- frontend → company/apps/frontend
+- platform → company (replaced)
+- agent-* → company/agents/*
 
 ## 📊 Workspaces
 
@@ -157,19 +261,6 @@ This monorepo uses **bun workspaces** for efficient dependency management:
 - **Hoisting:** Shared dependencies installed at root
 - **Linked packages:** Local packages can import each other
 - **Selective commands:** Run scripts in specific workspaces
-
-### Workspace Commands
-
-```bash
-# Install dependencies for specific workspace
-bun install --filter @duet-company/frontend
-
-# Run script in specific workspace
-bun run --filter @duet-company/backend test
-
-# Run script in all workspaces matching pattern
-bun run --filter '*build*' build
-```
 
 ## 🛠️ Development Workflow
 
@@ -224,28 +315,6 @@ bun run --filter @duet-company/frontend test
 - **K8s Manifests:** `kubectl apply -f k8s/`
 - **Monitoring:** Prometheus + Grafana
 
-## 📝 Documentation
-
-- **Architecture:** See `docs/architecture.md`
-- **API Reference:** See `docs/api.md`
-- **Contributing:** See `docs/contributing.md`
-- **Development Guide:** See `docs/development.md`
-
-## 🔒 Security
-
-- **Secrets:** Stored in GitHub Secrets (not committed)
-- **Environment:** `.env.example` for reference
-- **Access:** All repos are public, internal tools are private
-- **Scanning:** GitHub Secret Scanning enabled
-
-## 📈 Performance Targets
-
-- **Frontend Build:** < 30 seconds (bun)
-- **API Response:** < 200ms (95th percentile)
-- **Query Time:** < 1 second (95th percentile, ClickHouse)
-- **Cold Start:** < 100ms (Workers AI)
-- **Uptime:** 99.9%+ (3 nines)
-
 ## 🤝 Contributing
 
 1. Fork this repository
@@ -276,9 +345,11 @@ MIT License - See [LICENSE](LICENSE) file
 **Duet Company** - AI Data Labs
 - **Website:** https://aidatalabs.ai
 - **GitHub:** https://github.com/duet-company
-- **Blog:** https://blog.aidatalabs.ai
+- **This Repo:** https://github.com/duet-company/company
 
 ---
 
 **Last Updated:** February 16, 2026
 **Maintained By:** duyetbot
+
+**Note:** This monorepo contains ALL company code, documentation, and resources. No other active repositories needed!
