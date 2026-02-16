@@ -1,0 +1,26 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: clickhouse-fast
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "false"
+provisioner: microk8s.io/hostpath
+parameters:
+  pvDir: /var/snap/microk8s/common/default-storage/clickhouse
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: microk8s.io/hostpath
+parameters:
+  pvDir: /var/snap/microk8s/common/default-storage
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
