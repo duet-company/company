@@ -1,0 +1,31 @@
+{
+  "name": "@duet-company/monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Data Labs - Monorepo containing all company code",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "agents/*"
+  ],
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter '*build*' build",
+    "test": "bun run --filter '*test*' test",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "bun run --filter '*tsconfig*' tsc --noEmit",
+    "clean": "bun run clean:workspaces && rm -rf node_modules",
+    "clean:workspaces": "bun run --filter '*' clean"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "typescript": "^5.7.2",
+    "bun-types": "latest"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "bun": ">=1.0.0"
+  }
+}

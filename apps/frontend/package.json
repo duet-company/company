@@ -1,0 +1,29 @@
+{
+  "name": "@duet-company/frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Data Labs - Frontend dashboard",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .next out dist node_modules"
+  },
+  "dependencies": {
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "@tanstack/react-query": "^5.62.0",
+    "axios": "^1.7.9"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.7.2"
+  }
+}
