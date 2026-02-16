@@ -51,10 +51,10 @@ def read_markdown_file(path):
 def generate_site():
     """Generate the static site."""
     website_dir = Path(__file__).parent
-    output_dir = website_dir / 'build'
+    output_dir = Path(__file__).parent.parent / 'docs'
     content_dir = website_dir / 'content'
 
-    # Create build directory
+    # Create output directory
     output_dir.mkdir(exist_ok=True)
 
     # Copy index.html
