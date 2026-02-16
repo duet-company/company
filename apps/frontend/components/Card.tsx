@@ -50,11 +50,12 @@ export function CardHeader({ children, className = '' }: CardHeaderProps) {
 interface CardTitleProps {
   children: React.ReactNode
   className?: string
+  style?: React.CSSProperties
 }
 
-export function CardTitle({ children, className = '' }: CardTitleProps) {
+export function CardTitle({ children, className = '', style }: CardTitleProps) {
   return (
-    <h3 className={`text-lg font-semibold mb-2 ${className}`} style={{ color: 'var(--color-text)' }}>
+    <h3 className={`text-lg font-semibold mb-2 ${className}`} style={{ ...{ color: 'var(--color-text)' }, ...style }}>
       {children}
     </h3>
   )

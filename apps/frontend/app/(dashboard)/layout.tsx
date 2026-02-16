@@ -10,23 +10,18 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-full w-64 border-r p-6 hidden md:block"
+      <aside className="hidden md:block fixed left-0 top-0 h-full w-64 border-r p-6"
              style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card-bg)' }}>
         <div className="mb-8">
           <h1 className="text-xl font-bold" style={{ color: 'var(--color-accent)' }}>AI Data Labs</h1>
         </div>
 
         <nav className="space-y-2">
-          <a href="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg"
-             style={{ backgroundColor: 'var(--color-accent)', color: 'white' }}>Overview</a>
-          <a href="/dashboard/agents" className="flex items-center gap-3 px-3 py-2 rounded-lg"
-             style={{ color: 'var(--color-text)' }}>Agents</a>
-          <a href="/dashboard/data" className="flex items-center gap-3 px-3 py-2 rounded-lg"
-             style={{ color: 'var(--color-text)' }}>Data</a>
-          <a href="/dashboard/analytics" className="flex items-center gap-3 px-3 py-2 rounded-lg"
-             style={{ color: 'var(--color-text)' }}>Analytics</a>
-          <a href="/dashboard/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg"
-             style={{ color: 'var(--color-text)' }}>Settings</a>
+          <a href="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-accent text-white">Overview</a>
+          <a href="/dashboard/agents" className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ color: 'var(--color-text)' }}>Agents</a>
+          <a href="/dashboard/data" className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ color: 'var(--color-text)' }}>Data</a>
+          <a href="/dashboard/analytics" className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ color: 'var(--color-text)' }}>Analytics</a>
+          <a href="/dashboard/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ color: 'var(--color-text)' }}>Settings</a>
         </nav>
       </aside>
 
@@ -46,5 +41,3 @@ export default function DashboardLayout({
     </div>
   )
 }
-
-export default DashboardLayout

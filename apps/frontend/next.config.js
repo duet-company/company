@@ -5,7 +5,7 @@ const nextConfig = {
   output: 'standalone',
   distDir: '.next',
   experimental: {
-    optimizeCss: true,
+    optimizeCss: true, // Enable with critters for production CSS optimization
   },
 }
 
