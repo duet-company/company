@@ -1,0 +1,24 @@
+# AI Data Labs - Terraform Variables Example
+# Copy this file to terraform.tfvars and fill in your values
+
+# DigitalOcean API Token
+# Get from: https://cloud.digitalocean.com/account/api/tokens
+do_token = "your-digitalocean-api-token-here"
+
+# SSH Public Key
+# Generate with: ssh-keygen -t rsa -b 4096 -C "ai-data-labs"
+ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC... your-key-here"
+
+# Region
+# sgp1 = Singapore, nyc1 = New York, ams3 = Amsterdam, sfo3 = San Francisco
+region = "sgp1"
+
+# Droplet Size
+# s-4vcpu-8gb-amd = 4 vCPUs, 8GB RAM, 160GB SSD (~$80/month)
+# c-8 = 8GB RAM, 2 vCPUs, 80GB SSD (~$40/month)
+# See: https://www.digitalocean.com/pricing
+droplet_size = "s-4vcpu-8gb-amd"
+
+# Number of droplets
+# 1 control plane + (droplet_count - 1) worker nodes
+droplet_count = 3
