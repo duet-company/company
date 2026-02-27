@@ -1,0 +1,118 @@
+# Cluster-wide RBAC Policies for AI Data Labs
+# These define permissions for different service accounts
+
+# ClusterRole for applications to read basic cluster info
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: app-reader
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "endpoints", "pods", "services"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "statefulsets"]
+    verbs: ["get", "list", "watch"]
+---
+# ClusterRole for monitoring system
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: monitoring-system
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "nodes/metrics", "pods", "services", "endpoints"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get"]
+  - nonResourceURLs: ["/metrics"]
+    verbs: ["get"]
+---
+# ClusterRole for ingress controller
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ingress-controller
+rules:
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses", "ingresses/status"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["services", "endpoints", "secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["extensions"]
+    resources: ["ingresses"]
+    verbs: ["get", "list", "watch"]
+---
+# ClusterRole for cert-manager
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cert-manager
+rules:
+  - apiGroups: ["cert-manager.io"]
+    resources: ["certificates", "certificaterequests", "issuers", "clusterissuers"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+---
+# ClusterRoleBinding for backend service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: backend-app-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: app-reader
+subjects:
+  - kind: ServiceAccount
+    name: backend
+    namespace: backend
+---
+# ClusterRoleBinding for monitoring system
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: monitoring-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: monitoring-system
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: monitoring
+---
+# ClusterRoleBinding for ingress controller
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ingress-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ingress-controller
+subjects:
+  - kind: ServiceAccount
+    name: nginx-ingress
+    namespace: ingress
+---
+# ClusterRoleBinding for cert-manager
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-manager
+subjects:
+  - kind: ServiceAccount
+    name: cert-manager
+    namespace: cert-manager

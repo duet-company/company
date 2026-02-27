@@ -1,0 +1,277 @@
+# Network Policies for AI Data Labs Cluster
+# These policies restrict pod-to-pod communication following the principle of least privilege
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: ai-data-labs
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: ai-data-labs
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: ai-data-labs
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-backend
+  namespace: ingress
+spec:
+  podSelector:
+    matchLabels:
+      app: nginx-ingress
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: backend
+      ports:
+        - protocol: TCP
+          port: 8000
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: agents
+      ports:
+        - protocol: TCP
+          port: 8001
+        - protocol: TCP
+          port: 8002
+        - protocol: TCP
+          port: 8003
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: clickhouse
+      ports:
+        - protocol: TCP
+          port: 8123
+        - protocol: TCP
+          port: 9000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-network-policy
+  namespace: backend
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress
+      ports:
+        - protocol: TCP
+          port: 8000
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8000
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: clickhouse
+      ports:
+        - protocol: TCP
+          port: 9000
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: agents
+      ports:
+        - protocol: TCP
+          port: 8001
+        - protocol: TCP
+          port: 8002
+        - protocol: TCP
+          port: 8003
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: ai-data-labs
+      ports:
+        - protocol: TCP
+          port: 6379
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: agents-network-policy
+  namespace: agents
+spec:
+  podSelector:
+    matchLabels:
+      app: agents
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: backend
+      ports:
+        - protocol: TCP
+          port: 8001
+        - protocol: TCP
+          port: 8002
+        - protocol: TCP
+          port: 8003
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8001
+        - protocol: TCP
+          port: 8002
+        - protocol: TCP
+          port: 8003
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: clickhouse
+      ports:
+        - protocol: TCP
+          port: 8123
+        - protocol: TCP
+          port: 9000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: clickhouse-network-policy
+  namespace: clickhouse
+spec:
+  podSelector:
+    matchLabels:
+      app: clickhouse
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: backend
+      ports:
+        - protocol: TCP
+          port: 9000
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: agents
+      ports:
+        - protocol: TCP
+          port: 9000
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9363
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: ai-data-labs
+      ports:
+        - protocol: TCP
+          port: 6379
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: monitoring-network-policy
+  namespace: monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app: monitoring
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 9090
+    - from:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 3000
+  egress:
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 9090
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 8001
+        - protocol: TCP
+          port: 8002
+        - protocol: TCP
+          port: 8003
+        - protocol: TCP
+          port: 9363

@@ -1,0 +1,113 @@
+# Resource Quotas for AI Data Labs Cluster
+# These quotas prevent resource exhaustion and ensure fair resource allocation
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-resources
+  namespace: ai-data-labs
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    persistentvolumeclaims: "10"
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-resources
+  namespace: backend
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
+    persistentvolumeclaims: "5"
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-resources
+  namespace: agents
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-resources
+  namespace: clickhouse
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    persistentvolumeclaims: "3"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-limits
+  namespace: ai-data-labs
+spec:
+  limits:
+    - default:
+        cpu: 500m
+        memory: 512Mi
+      defaultRequest:
+        cpu: 100m
+        memory: 128Mi
+      type: Container
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-limits
+  namespace: backend
+spec:
+  limits:
+    - default:
+        cpu: "1"
+        memory: 1Gi
+      defaultRequest:
+        cpu: 250m
+        memory: 256Mi
+      type: Container
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-limits
+  namespace: agents
+spec:
+  limits:
+    - default:
+        cpu: "1"
+        memory: 1Gi
+      defaultRequest:
+        cpu: 250m
+        memory: 256Mi
+      type: Container
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-limits
+  namespace: clickhouse
+spec:
+  limits:
+    - default:
+        cpu: "2"
+        memory: 4Gi
+      defaultRequest:
+        cpu: 500m
+        memory: 1Gi
+      type: Container
