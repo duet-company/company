@@ -1,0 +1,146 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: clickhouse
+  namespace: clickhouse
+  labels:
+    app: clickhouse
+    component: database
+spec:
+  serviceName: "clickhouse"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clickhouse
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: clickhouse-fast
+        resources:
+          requests:
+            storage: 100Gi
+  template:
+    metadata:
+      labels:
+        app: clickhouse
+        component: database
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"  # ClickHouse Prometheus endpoint (if exposed)
+    spec:
+      containers:
+        - name: clickhouse-server
+          image: clickhouse/clickhouse-server:23.10-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9000
+              name: tcp
+            - containerPort: 8123
+              name: http
+            - containerPort: 9009
+              name: interserver
+          env:
+            - name: CLICKHOUSE_DB
+              valueFrom:
+                secretKeyRef:
+                  name: clickhouse-secrets
+                  key: CH_DB_NAME
+            - name: CLICKHOUSE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: clickhouse-secrets
+                  key: CH_DB_USER
+            - name: CLICKHOUSE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: clickhouse-secrets
+                  key: CH_PASSWORD_ADMIN
+          volumeMounts:
+            - name: config
+              mountPath: /etc/clickhouse-server/config.d
+            - name: users
+              mountPath: /etc/clickhouse-server/users.d
+            - name: secrets
+              mountPath: /etc/clickhouse-server/secrets
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/clickhouse
+            - name: logs
+              mountPath: /var/log/clickhouse-server
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+          livenessProbe:
+            exec:
+              command:
+                - /usr/bin/clickhouse-client
+                - --query
+                - "SELECT 1"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - /usr/bin/clickhouse-client
+                - --query
+                - "SELECT 1"
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+          startupProbe:
+            exec:
+              command:
+                - /usr/bin/clickhouse-client
+                - --query
+                - "SELECT 1"
+            failureThreshold: 30
+            periodSeconds: 10
+          securityContext:
+            runAsUser: 101
+            runAsGroup: 101
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+      securityContext:
+        fsGroup: 101
+        runAsUser: 101
+        runAsNonRoot: true
+      restartPolicy: Always
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: clickhouse-fast
+        resources:
+          requests:
+            storage: 100Gi
+  volumes:
+    - name: config
+      configMap:
+        name: clickhouse-config
+        items:
+          - key: config.xml
+            path: config.xml
+    - name: users
+      configMap:
+        name: clickhouse-config
+        items:
+          - key: users.xml
+            path: users.xml
+    - name: secrets
+      secret:
+        secretName: clickhouse-secrets
