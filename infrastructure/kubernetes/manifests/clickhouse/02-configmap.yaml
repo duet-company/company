@@ -1,0 +1,149 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clickhouse-config
+  namespace: clickhouse
+  labels:
+    app: clickhouse
+    component: config
+data:
+  config.xml: |
+    <?xml version="1.0"?>
+    <yandex>
+      <!-- Listen to all interfaces inside the cluster -->
+      <listen_host>0.0.0.0</listen_host>
+      <tcp_port>9000</tcp_port>
+      <http_port>8123</http_port>
+      <interserver_http_port>9009</interserver_http_port>
+
+      <!-- Path to data directory -->
+      <path>/var/lib/clickhouse</path>
+
+      <!-- Temporary files -->
+      <tmp_path>/var/tmp/clickhouse</tmp_path>
+
+      <!-- Format schema path -->
+      <format_schema_path>/var/lib/clickhouse/format_schemas</format_schema_path>
+
+      <!-- Users configuration -->
+      <users_config>/etc/clickhouse-server/users.xml</users_config>
+
+      <!-- Access control -->
+      <access_control_path>/var/lib/clickhouse/access</access_control_path>
+
+      <!-- Logging -->
+      <logger>
+        <level>information</level>
+        <log>/var/log/clickhouse-server/clickhouse-server.log</log>
+        <errorlog>/var/log/clickhouse-server/clickhouse-server.err.log</errorlog>
+        <size>1000M</size>
+        <count>10</count>
+      </logger>
+
+      <!-- System profiles -->
+      <system_name>Kubernetes ClickHouse</system_name>
+
+      <!-- Timezone -->
+      <timezone>Asia/Ho_Chi_Minh</timezone>
+
+      <!-- Compression -->
+      <merge_tree>
+        <max_bytes_to_merge_at_max_space_in_pool>10485760000</max_bytes_to_merge_at_max_space_in_pool> <!-- 10GB -->
+        <summing_max_bytes_to_merge_at_max_space_in_pool>5242880000</summing_max_bytes_to_merge_at_max_space_in_pool> <!-- 5GB -->
+        <number_of_free_entries_in_pool_to_lower_max_size_of_merge>8</number_of_free_entries_in_pool_to_lower_max_size_of_merge>
+        <min_bytes_for_wide_part>8388608</min_bytes_for_wide_part>
+        <min_rows_for_wide_part>8192</min_rows_for_wide_part>
+        <max_bytes_to_merge_at_once>104857600</max_bytes_to_merge_at_once> <!-- 100MB -->
+        <max_avg_part_size_for_merges>
+          <runtime>104857600</runtime>
+        </max_avg_part_size_for_merges>
+        <split_threshold>8388608</split_threshold>
+        <index_granularity>8192</index_granularity>
+        <min_index_granularity>8192</min_index_granularity>
+        <merge_with_removed_rows>1</merge_with_removed_rows>
+        <storage_policy>default</storage_policy>
+      </merge_tree>
+
+      <!-- Cache settings -->
+      <mark_cache>
+        <max_elements>262144</max_elements>
+        <max_elements_size>1073741824</max_elements_size> <!-- 1GB -->
+      </mark_cache>
+
+      <index_uncompressed_cache>
+        <max_elements>262144</max_elements>
+        <max_elements_size>1073741824</max_elements_size> <!-- 1GB -->
+      </index_uncompressed_cache>
+
+      <!-- Concurrent queries -->
+      <max_concurrent_queries>100</max_concurrent_queries>
+      <max_connections>1024</max_connections>
+      <keep_alive_timeout>10</keep_alive_timeout>
+
+      <!-- MySQL compatibility -->
+      <mysql>
+        <listen_port>9004</listen_port>
+      </mysql>
+
+      <!-- PostgreSQL compatibility -->
+      <postgresql>
+        <listen_port>9005</listen_port>
+      </postgresql>
+    </yandex>
+  users.xml: |
+    <?xml version="1.0"?>
+    <yandex>
+      <users>
+        <!-- Default user (for internal use) -->
+        <default>
+          <password_sha256_hex>e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</password_sha256_hex>
+          <networks>
+            <ip>::/0</ip>
+          </networks>
+          <profile>default</profile>
+          <quota>default</quota>
+        </default>
+
+        <!-- Read-only user -->
+        <readonly>
+          <password_sha256_hex>e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</password_sha256_hex>
+          <networks>
+            <ip>::/0</ip>
+          </networks>
+          <profile>default</profile>
+          <quota>default</quota>
+        </readonly>
+
+        <!-- Admin user (should be changed in production!) -->
+        <admin>
+          <password_sha256_hex>c7ad44badorrhea2a2adb83a413ac6a995d22f70424a5d4f44c1f8e7f8d8b9a3</password_sha256_hex>
+          <networks>
+            <ip>::/0</ip>
+          </networks>
+          <profile>default</profile>
+          <quota>default</quota>
+        </admin>
+      </users>
+
+      <profiles>
+        <default>
+          <max_network_bandwidth>1000000000</max_network_bandwidth>
+          <max_bytes_before_external_group_by>4000000000</max_bytes_before_external_group_by>
+          <max_bytes_before_external_sort>4000000000</max_bytes_before_external_sort>
+        </default>
+      </profiles>
+
+      <quotas>
+        <default>
+          <interval>
+            <duration>3600</duration>
+            <queries>0</queries>
+            <errors>0</errors>
+            <result_rows>0</result_rows>
+            <read_rows>0</read_rows>
+            <execution_time>0</execution_time>
+          </interval>
+        </default>
+      </quotas>
+    </yandex>

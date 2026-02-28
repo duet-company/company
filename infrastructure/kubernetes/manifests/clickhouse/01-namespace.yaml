@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: clickhouse
+  labels:
+    name: clickhouse
+    app: clickhouse
+    environment: production
+    purpose: analytics-database
+spec: {}

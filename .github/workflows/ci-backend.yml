@@ -48,5 +48,3 @@ jobs:
       - name: Run Ruff linter
         working-directory: apps/backend
         run: ruff check .
-
-      - name: Run Biome
