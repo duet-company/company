@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-data-labs
+  labels:
+    name: ai-data-labs
+    app: ai-data-labs
+    environment: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: clickhouse
+  labels:
+    name: clickhouse
+    app: ai-data-labs
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: backend
+  labels:
+    name: backend
+    app: ai-data-labs
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agents
+  labels:
+    name: agents
+    app: ai-data-labs
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ingress
+  labels:
+    name: ingress
+    app: ai-data-labs
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-manager
+  labels:
+    name: cert-manager
+    app: ai-data-labs
