@@ -29,7 +29,7 @@ jobs:
           version: latest
 
       - name: Biome check all
-        run: biome check . --write=false
+        run: biome check .
 
       - name: Install Ruff
         run: pip install ruff
@@ -59,7 +59,7 @@ jobs:
           version: latest
 
       - name: Biome format check
-        run: biome format --write=false .
+        run: biome format --check .
 
       - name: Install Black
         run: pip install black
