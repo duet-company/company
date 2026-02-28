@@ -14,7 +14,6 @@ from auth.security import (
     create_access_token,
     create_refresh_token,
     get_current_user_id,
-    get_current_user_role,
 )
 from auth.service import AuthService
 from models.user import UserResponse, UserRole
@@ -156,7 +155,7 @@ async def refresh_token(token_data: RefreshTokenRequest):
             }
         )
 
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not refresh token"
