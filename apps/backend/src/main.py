@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import logging
+from api.v1 import auth
 
 # Configure logging
 logging.basicConfig(
@@ -23,6 +24,7 @@ app = FastAPI(
     docs_url="/api/docs",
     redoc_url="/api/redoc",
 )
+app.include_router(auth.router)
 
 # CORS middleware
 app.add_middleware(
@@ -98,10 +100,6 @@ async def status():
     }
 
 
-# Import and register routers
-from api.v1 import auth
-
-app.include_router(auth.router)
 
 
 if __name__ == "__main__":
