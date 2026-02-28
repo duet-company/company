@@ -3,7 +3,6 @@ Authentication API endpoints
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from datetime import timedelta
 from schemas.auth import (
     LoginRequest,
     LoginResponse,
