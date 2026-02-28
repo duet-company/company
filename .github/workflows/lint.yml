@@ -59,7 +59,7 @@ jobs:
           version: latest
 
       - name: Biome format check
-        run: biome format --check .
+        run: biome format .
 
       - name: Install Black
         run: pip install black

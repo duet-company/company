@@ -7,14 +7,13 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**/*"],
-    "experimentalScannerIgnores": [
-      "node_modules",
-      "dist",
-      "build",
-      ".next",
-      "coverage",
-      "*.min.js"
+    "includes": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.jsx",
+      "**/*.json",
+      "**/*.md"
     ]
   },
   "formatter": {
@@ -34,9 +33,6 @@
       "bracketSpacing": true,
       "bracketSameLine": false,
       "quoteStyle": "double"
-    },
-    "organizeImports": {
-      "enabled": true
     }
   },
   "linter": {
