@@ -4,17 +4,17 @@ Unit tests for the AI agent framework.
 
 import asyncio
 import pytest
-from datetime import datetime
+
+
+from typing import Any, Optional, Dict
 
 from .base import BaseAgent, AgentStatus, AgentCapability, AgentMessage
-from .config import AgentConfig, AgentType, RetryConfig, LLMProviderConfig
+from .config import AgentConfig, AgentType, LLMProviderConfig
 from .registry import AgentRegistry
 from .lifecycle import AgentLifecycleManager
-from .communication import CommunicationChannel
-from .task_queue import TaskQueue, Task, TaskPriority, TaskStatus
-from .errors import AgentInitializationError, AgentExecutionError
+from .task_queue import TaskQueue, TaskPriority
+from .errors import AgentExecutionError, AgentConfigError, AgentAlreadyRegisteredError
 from .llm_providers import (
-    LLMProviderType,
     LLMMessageRole,
     LLMMessage,
     LLMResponse,
@@ -25,6 +25,7 @@ from .llm_providers import (
     LLMProviderFactory,
     create_llm_provider,
 )
+
 
 
 # Test agent implementation
