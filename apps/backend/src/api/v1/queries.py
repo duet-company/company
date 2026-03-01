@@ -4,7 +4,7 @@ Query execution API endpoints
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 from datetime import datetime
 from auth.security import get_current_user_id
 from schemas.query import (

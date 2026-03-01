@@ -3,7 +3,7 @@ Data source schemas
 """
 
 from pydantic import BaseModel, Field, validator
-from typing import Optional, Literal, Dict, Any
+from typing import Optional, Dict, Any
 from datetime import datetime
 from enum import Enum
 
