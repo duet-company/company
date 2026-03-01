@@ -26,6 +26,20 @@ from .config import (
     RetryConfig,
 )
 
+# LLM Providers
+from .llm_providers import (
+    LLMProviderType,
+    LLMMessageRole,
+    LLMMessage,
+    LLMResponse,
+    BaseLLMProvider,
+    ClaudeProvider,
+    GPT4Provider,
+    GLM5Provider,
+    LLMProviderFactory,
+    create_llm_provider,
+)
+
 # Lifecycle management
 from .lifecycle import AgentLifecycleManager
 
@@ -62,6 +76,17 @@ __all__ = [
     "AgentType",
     "LLMProviderConfig",
     "RetryConfig",
+    # LLM Providers
+    "LLMProviderType",
+    "LLMMessageRole",
+    "LLMMessage",
+    "LLMResponse",
+    "BaseLLMProvider",
+    "ClaudeProvider",
+    "GPT4Provider",
+    "GLM5Provider",
+    "LLMProviderFactory",
+    "create_llm_provider",
     # Lifecycle
     "AgentLifecycleManager",
     # Registry
