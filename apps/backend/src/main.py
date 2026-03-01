@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import logging
-from api.v1 import auth
+from api.v1 import auth, data_sources, queries, schemas, agents
 
 # Configure logging
 logging.basicConfig(
@@ -25,6 +25,10 @@ app = FastAPI(
     redoc_url="/api/redoc",
 )
 app.include_router(auth.router)
+app.include_router(data_sources.router)
+app.include_router(queries.router)
+app.include_router(schemas.router)
+app.include_router(agents.router)
 
 # CORS middleware
 app.add_middleware(
