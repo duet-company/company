@@ -7,12 +7,24 @@ import pytest
 from datetime import datetime
 
 from .base import BaseAgent, AgentStatus, AgentCapability, AgentMessage
-from .config import AgentConfig, AgentType, RetryConfig
+from .config import AgentConfig, AgentType, RetryConfig, LLMProviderConfig
 from .registry import AgentRegistry
 from .lifecycle import AgentLifecycleManager
 from .communication import CommunicationChannel
 from .task_queue import TaskQueue, Task, TaskPriority, TaskStatus
 from .errors import AgentInitializationError, AgentExecutionError
+from .llm_providers import (
+    LLMProviderType,
+    LLMMessageRole,
+    LLMMessage,
+    LLMResponse,
+    BaseLLMProvider,
+    ClaudeProvider,
+    GPT4Provider,
+    GLM5Provider,
+    LLMProviderFactory,
+    create_llm_provider,
+)
 
 
 # Test agent implementation
@@ -392,6 +404,331 @@ class TestBaseAgent:
         assert health["agent_id"] == "test-agent"
         assert health["name"] == "Test Agent"
         assert health["status"] == "ready"
+
+
+class TestLLMMessage:
+    """Tests for LLMMessage."""
+
+    def test_create_message(self):
+        """Test creating an LLM message."""
+        msg = LLMMessage(
+            role=LLMMessageRole.USER,
+            content="Hello, how are you?",
+        )
+
+        assert msg.role == LLMMessageRole.USER
+        assert msg.content == "Hello, how are you?"
+
+    def test_message_to_dict(self):
+        """Test converting message to dictionary."""
+        msg = LLMMessage(
+            role=LLMMessageRole.USER,
+            content="Test",
+            metadata={"test": "value"},
+        )
+
+        data = msg.to_dict()
+
+        assert data["role"] == "user"
+        assert data["content"] == "Test"
+        assert data["metadata"]["test"] == "value"
+
+    def test_message_from_dict(self):
+        """Test creating message from dictionary."""
+        data = {
+            "role": "system",
+            "content": "You are a helpful assistant",
+        }
+
+        msg = LLMMessage.from_dict(data)
+
+        assert msg.role == LLMMessageRole.SYSTEM
+        assert msg.content == "You are a helpful assistant"
+
+
+class TestLLMResponse:
+    """Tests for LLMResponse."""
+
+    def test_create_response(self):
+        """Test creating an LLM response."""
+        response = LLMResponse(
+            content="Hello! I'm doing well, thank you.",
+            model="claude-3-5-sonnet-20241022",
+            provider="claude",
+            tokens_used={"input_tokens": 10, "output_tokens": 20},
+            finish_reason="end_turn",
+        )
+
+        assert response.content == "Hello! I'm doing well, thank you."
+        assert response.provider == "claude"
+        assert response.tokens_used["output_tokens"] == 20
+
+    def test_response_to_dict(self):
+        """Test converting response to dictionary."""
+        response = LLMResponse(
+            content="Response text",
+            model="gpt-4-turbo-preview",
+            provider="openai",
+            tokens_used={"total_tokens": 100},
+        )
+
+        data = response.to_dict()
+
+        assert data["content"] == "Response text"
+        assert data["provider"] == "openai"
+        assert data["tokens_used"]["total_tokens"] == 100
+
+
+class TestLLMProviderConfig:
+    """Tests for LLMProviderConfig."""
+
+    def test_create_config(self):
+        """Test creating an LLM provider configuration."""
+        config = LLMProviderConfig(
+            provider="claude",
+            model="claude-3-5-sonnet-20241022",
+            api_key="test-key",
+            temperature=0.5,
+            max_tokens=2048,
+            timeout=60,
+        )
+
+        assert config.provider == "claude"
+        assert config.model == "claude-3-5-sonnet-20241022"
+        assert config.api_key == "test-key"
+        assert config.temperature == 0.5
+
+    def test_config_to_dict(self):
+        """Test converting config to dictionary."""
+        config = LLMProviderConfig(
+            provider="gpt4",
+            model="gpt-4-turbo-preview",
+            api_key="secret-key",
+        )
+
+        data = config.to_dict()
+
+        assert data["provider"] == "gpt4"
+        assert data["model"] == "gpt-4-turbo-preview"
+        assert data["api_key"] == "***"  # masked in to_dict
+
+
+class TestClaudeProvider:
+    """Tests for ClaudeProvider."""
+
+    def test_initialize_without_api_key(self):
+        """Test that initialization fails without API key."""
+        config = LLMProviderConfig(
+            provider="claude",
+            model="claude-3-5-sonnet-20241022",
+            api_key=None,
+        )
+        provider = ClaudeProvider(config)
+
+        with pytest.raises(AgentExecutionError, match="Claude API key is required"):
+            asyncio.run(provider.initialize())
+
+    def test_initialize_with_api_key(self, monkeypatch):
+        """Test initialization with API key."""
+        config = LLMProviderConfig(
+            provider="claude",
+            model="claude-3-5-sonnet-20241022",
+            api_key="test-key",
+        )
+        provider = ClaudeProvider(config)
+
+        # Should not raise an error
+        asyncio.run(provider.initialize())
+
+        assert provider.config.api_key == "test-key"
+
+
+class TestGPT4Provider:
+    """Tests for GPT4Provider."""
+
+    def test_initialize_without_api_key(self):
+        """Test that initialization fails without API key."""
+        config = LLMProviderConfig(
+            provider="gpt4",
+            model="gpt-4-turbo-preview",
+            api_key=None,
+        )
+        provider = GPT4Provider(config)
+
+        with pytest.raises(AgentExecutionError, match="OpenAI API key is required"):
+            asyncio.run(provider.initialize())
+
+    def test_initialize_with_api_key(self, monkeypatch):
+        """Test initialization with API key."""
+        config = LLMProviderConfig(
+            provider="gpt4",
+            model="gpt-4-turbo-preview",
+            api_key="test-key",
+        )
+        provider = GPT4Provider(config)
+
+        # Should not raise an error
+        asyncio.run(provider.initialize())
+
+
+class TestGLM5Provider:
+    """Tests for GLM5Provider."""
+
+    def test_initialize_without_api_key(self):
+        """Test that initialization fails without API key."""
+        config = LLMProviderConfig(
+            provider="glm5",
+            model="glm-4",
+            api_key=None,
+        )
+        provider = GLM5Provider(config)
+
+        with pytest.raises(AgentExecutionError, match="Zhipu AI API key is required"):
+            asyncio.run(provider.initialize())
+
+    def test_initialize_with_api_key(self, monkeypatch):
+        """Test initialization with API key."""
+        config = LLMProviderConfig(
+            provider="glm5",
+            model="glm-4",
+            api_key="test-key",
+        )
+        provider = GLM5Provider(config)
+
+        # Should not raise an error
+        asyncio.run(provider.initialize())
+
+
+class TestLLMProviderFactory:
+    """Tests for LLMProviderFactory."""
+
+    def test_create_claude_provider(self):
+        """Test creating a Claude provider."""
+        config = LLMProviderConfig(
+            provider="claude",
+            model="claude-3-5-sonnet-20241022",
+            api_key="test-key",
+        )
+        provider = LLMProviderFactory.create(config)
+
+        assert isinstance(provider, ClaudeProvider)
+        assert provider.config.provider == "claude"
+
+    def test_create_gpt4_provider(self):
+        """Test creating a GPT-4 provider."""
+        config = LLMProviderConfig(
+            provider="gpt4",
+            model="gpt-4-turbo-preview",
+            api_key="test-key",
+        )
+        provider = LLMProviderFactory.create(config)
+
+        assert isinstance(provider, GPT4Provider)
+        assert provider.config.provider == "gpt4"
+
+    def test_create_glm5_provider(self):
+        """Test creating a GLM-5 provider."""
+        config = LLMProviderConfig(
+            provider="glm5",
+            model="glm-4",
+            api_key="test-key",
+        )
+        provider = LLMProviderFactory.create(config)
+
+        assert isinstance(provider, GLM5Provider)
+        assert provider.config.provider == "glm5"
+
+    def test_create_unsupported_provider(self):
+        """Test that creating an unsupported provider raises error."""
+        config = LLMProviderConfig(
+            provider="unsupported",
+            model="test-model",
+            api_key="test-key",
+        )
+
+        with pytest.raises(AgentExecutionError, match="Unsupported LLM provider"):
+            LLMProviderFactory.create(config)
+
+    def test_list_providers(self):
+        """Test listing available providers."""
+        providers = LLMProviderFactory.list_providers()
+
+        assert "claude" in providers
+        assert "gpt4" in providers
+        assert "glm5" in providers
+
+    def test_register_custom_provider(self):
+        """Test registering a custom provider."""
+
+        class CustomProvider(BaseLLMProvider):
+            async def initialize(self) -> None:
+                pass
+
+            async def generate(self, messages, temperature=None, max_tokens=None, **kwargs):
+                pass
+
+            async def generate_stream(self, messages, temperature=None, max_tokens=None, **kwargs):
+                pass
+
+        LLMProviderFactory.register_provider("custom", CustomProvider)
+
+        providers = LLMProviderFactory.list_providers()
+        assert "custom" in providers
+
+        # Clean up
+        LLMProviderFactory._providers.pop("custom")
+
+
+class TestCreateLLMProviderFunction:
+    """Tests for the create_llm_provider convenience function."""
+
+    def test_create_claude_with_defaults(self, monkeypatch):
+        """Test creating Claude provider with defaults from environment."""
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.delenv("DEFAULT_LLM_PROVIDER", raising=False)
+        monkeypatch.delenv("DEFAULT_LLM_MODEL", raising=False)
+
+        provider = create_llm_provider(provider="claude")
+
+        assert isinstance(provider, ClaudeProvider)
+        assert provider.config.model == "claude-3-5-sonnet-20241022"
+        assert provider.config.api_key == "test-key"
+
+    def test_create_gpt4_with_overrides(self, monkeypatch):
+        """Test creating GPT-4 provider with custom model."""
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+
+        provider = create_llm_provider(
+            provider="gpt4",
+            model="gpt-4-vision-preview",
+            temperature=0.3,
+            max_tokens=1024,
+        )
+
+        assert isinstance(provider, GPT4Provider)
+        assert provider.config.model == "gpt-4-vision-preview"
+        assert provider.config.temperature == 0.3
+        assert provider.config.max_tokens == 1024
+
+    def test_create_glm5_with_explicit_key(self):
+        """Test creating GLM-5 provider with explicit API key."""
+        provider = create_llm_provider(
+            provider="glm5",
+            api_key="explicit-key",
+            model="glm-4",
+        )
+
+        assert isinstance(provider, GLM5Provider)
+        assert provider.config.api_key == "explicit-key"
+
+    def test_create_with_missing_api_key(self, monkeypatch):
+        """Test that creating provider without API key raises error."""
+        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+        monkeypatch.delenv("ZHIPUAI_API_KEY", raising=False)
+
+        with pytest.raises(AgentExecutionError, match="API key is required"):
+            create_llm_provider(provider="claude")
 
 
 if __name__ == "__main__":
