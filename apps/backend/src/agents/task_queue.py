@@ -19,7 +19,6 @@ from collections import deque
 import uuid
 
 from .errors import AgentTaskQueueError
-from .config import RetryConfig
 
 
 class TaskStatus(Enum):

@@ -3,6 +3,7 @@ Unit tests for the AI agent framework.
 """
 
 import asyncio
+from typing import Any, Optional, Dict
 import pytest
 from datetime import datetime
 
@@ -12,7 +13,7 @@ from .registry import AgentRegistry
 from .lifecycle import AgentLifecycleManager
 from .communication import CommunicationChannel
 from .task_queue import TaskQueue, Task, TaskPriority, TaskStatus
-from .errors import AgentInitializationError, AgentExecutionError
+from .errors import AgentInitializationError, AgentExecutionError, AgentConfigError, AgentAlreadyRegisteredError
 
 
 # Test agent implementation

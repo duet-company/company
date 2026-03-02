@@ -15,7 +15,7 @@ from collections import deque
 from datetime import datetime
 
 from .base import AgentMessage
-from .errors import AgentCommunicationError, AgentNotRegisteredError
+from .errors import AgentCommunicationError
 from .registry import AgentRegistry
 
 

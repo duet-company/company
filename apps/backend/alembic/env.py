@@ -10,7 +10,7 @@ from alembic import context
 
 # Import your models here
 from src.database import Base
-from src.models.db import User, Session
+from src.models.db import User, Session  # noqa: F401
 
 # this is the Alembic Config object
 config = context.config
