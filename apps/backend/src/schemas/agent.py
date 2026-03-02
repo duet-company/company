@@ -3,7 +3,7 @@ Agent interaction schemas
 """
 
 from pydantic import BaseModel, Field, validator
-from typing import Optional, Literal, Dict, Any, List
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 from enum import Enum
 
