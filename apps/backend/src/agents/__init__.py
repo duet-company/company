@@ -51,6 +51,9 @@ from .errors import (
     AgentConfigError,
 )
 
+# Specific agents
+from .platform_designer import PlatformDesignerAgent, get_platform_config
+
 __all__ = [
     # Base agent
     "BaseAgent",
@@ -83,6 +86,9 @@ __all__ = [
     "AgentCommunicationError",
     "AgentTaskQueueError",
     "AgentConfigError",
+    # Agents
+    "PlatformDesignerAgent",
+    "get_platform_config",
 ]
 
 __version__ = "1.0.0"
