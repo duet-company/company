@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: aidatalabs
+  labels:
+    app: frontend
+data:
+  # Backend API URL
+  NEXT_PUBLIC_API_URL: "https://api.aidatalabs.ai"
+  NEXT_PUBLIC_API_WS_URL: "wss://api.aidatalabs.ai"
+
+  # Application configuration
+  NEXT_PUBLIC_APP_NAME: "AI Data Labs"
+  NEXT_PUBLIC_APP_VERSION: "0.1.0"
+
+  # Feature flags
+  NEXT_PUBLIC_ENABLE_CHAT: "true"
+  NEXT_PUBLIC_ENABLE_DASHBOARD: "true"
+  NEXT_PUBLIC_ENABLE_QUERY: "true"
+
+  # Analytics (optional)
+  NEXT_PUBLIC_ENABLE_ANALYTICS: "false"
+
+  # Environment
+  NEXT_PUBLIC_ENVIRONMENT: "production"

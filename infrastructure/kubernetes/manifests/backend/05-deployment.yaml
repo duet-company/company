@@ -1,0 +1,206 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: aidatalabs
+  labels:
+    app: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: fastapi
+        image: aidatalabs/backend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+
+        env:
+        # Database configuration
+        - name: POSTGRES_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: POSTGRES_HOST
+        - name: POSTGRES_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: POSTGRES_PORT
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: POSTGRES_PASSWORD
+        - name: CLICKHOUSE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: CLICKHOUSE_HOST
+        - name: CLICKHOUSE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: CLICKHOUSE_PORT
+        - name: CLICKHOUSE_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: CLICKHOUSE_DATABASE
+        - name: CLICKHOUSE_USER
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: CLICKHOUSE_USER
+        - name: CLICKHOUSE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: CLICKHOUSE_PASSWORD
+
+        # Application configuration
+        - name: APP_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: APP_NAME
+        - name: APP_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: APP_VERSION
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: LOG_LEVEL
+
+        # CORS configuration
+        - name: CORS_ORIGINS
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: CORS_ORIGINS
+        - name: CORS_ALLOW_CREDENTIALS
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: CORS_ALLOW_CREDENTIALS
+
+        # AI Provider configuration
+        - name: ANTHROPIC_API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: ANTHROPIC_API_URL
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: ANTHROPIC_API_KEY
+        - name: OPENAI_API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: OPENAI_API_URL
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: OPENAI_API_KEY
+        - name: ZHIPU_API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: ZHIPU_API_URL
+        - name: ZHIPU_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: ZHIPU_API_KEY
+
+        # JWT secret
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: JWT_SECRET
+
+        # Agent configuration
+        - name: MAX_AGENTS
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: MAX_AGENTS
+        - name: AGENT_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: AGENT_TIMEOUT
+        - name: TASK_QUEUE_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: TASK_QUEUE_SIZE
+
+        # Monitoring configuration
+        - name: ENABLE_METRICS
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: ENABLE_METRICS
+        - name: METRICS_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: METRICS_PATH
+
+        # Resource limits
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+      # Restart policy
+      restartPolicy: Always
