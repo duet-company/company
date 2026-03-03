@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aidatalabs
+  labels:
+    name: aidatalabs
+    app: ai-data-labs
