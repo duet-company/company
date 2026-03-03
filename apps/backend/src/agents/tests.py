@@ -7,7 +7,7 @@ from typing import Any, Optional, Dict
 import pytest
 
 from .base import BaseAgent, AgentStatus, AgentCapability, AgentMessage
-from .config import AgentConfig, AgentType, RetryConfig
+from .config import AgentConfig, AgentType
 from .registry import AgentRegistry
 from .lifecycle import AgentLifecycleManager
 from .task_queue import TaskQueue, TaskPriority

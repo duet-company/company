@@ -3,13 +3,12 @@ Base agent class and interface for all AI agents.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, AsyncGenerator
+from typing import Any, Dict, List, Optional
 from datetime import datetime
 from enum import Enum
 import logging
 
 from .config import AgentConfig
-from .errors import AgentInitializationError, AgentExecutionError
 
 
 class AgentStatus(Enum):
