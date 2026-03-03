@@ -4,7 +4,6 @@ Metrics model for tracking system and business metrics
 
 from datetime import datetime
 from typing import Optional
-import os
 
 from .query_log import ClickHouseClient
 

@@ -10,7 +10,6 @@ from alembic import context
 
 # Import your models here
 from src.database import Base
-from src.models.db import User, Session
 
 # this is the Alembic Config object
 config = context.config
