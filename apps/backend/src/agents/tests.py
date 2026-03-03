@@ -13,7 +13,7 @@ from .lifecycle import AgentLifecycleManager
 from .task_queue import TaskQueue, TaskPriority
 from .errors import AgentExecutionError, AgentConfigError, AgentAlreadyRegisteredError
 from .llm_providers import (
-    LLMProviderType,
+    
     LLMMessageRole,
     LLMMessage,
     LLMResponse,
