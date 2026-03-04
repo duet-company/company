@@ -18,6 +18,7 @@ export default function DashboardLayout({
 
         <nav className="space-y-2">
           <a href="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-accent text-white">Overview</a>
+          <a href="/dashboard/query" className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ color: 'var(--color-text)' }}>Query Editor</a>
           <a href="/dashboard/agents" className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ color: 'var(--color-text)' }}>Agents</a>
           <a href="/dashboard/data" className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ color: 'var(--color-text)' }}>Data</a>
           <a href="/dashboard/analytics" className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ color: 'var(--color-text)' }}>Analytics</a>

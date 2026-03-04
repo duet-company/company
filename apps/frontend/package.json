@@ -14,11 +14,13 @@
     "clean": "rm -rf .next out dist node_modules"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.62.0",
+    "axios": "^1.7.9",
+    "lucide-react": "^0.468.0",
     "next": "^14.2.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
-    "@tanstack/react-query": "^5.62.0",
-    "axios": "^1.7.9"
+    "recharts": "^2.15.4"
   },
   "devDependencies": {
     "@types/node": "^25.2.3",

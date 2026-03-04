@@ -4,7 +4,7 @@ import React from 'react'
 
 interface BadgeProps {
   children: React.ReactNode
-  variant?: 'default' | 'accent' | 'success' | 'error'
+  variant?: 'default' | 'accent' | 'success' | 'error' | 'info'
   size?: 'sm' | 'md' | 'lg'
   className?: string
 }
@@ -46,6 +46,11 @@ export function Badge({ children, variant = 'default', size = 'md', className = 
       backgroundColor: 'color-mix(in oklch, var(--color-error), transparent 90%)',
       color: 'var(--color-error)',
       borderColor: 'color-mix(in oklch, var(--color-error), transparent 80%)',
+    },
+    info: {
+      backgroundColor: 'color-mix(in oklch, oklch(0.6 0.15 250), transparent 90%)',
+      color: 'oklch(0.6 0.15 250)',
+      borderColor: 'color-mix(in oklch, oklch(0.6 0.15 250), transparent 80%)',
     },
   }
 
