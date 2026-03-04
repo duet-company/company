@@ -517,9 +517,9 @@ python -m pytest src/agents/tests.py -v
 
 See the example agents in the `agents/` directory:
 
-- `query/` - Query Agent (NL to SQL)
-- `design/` - Design Agent (infrastructure automation)
-- `support/` - Support Agent (24/7 assistance)
+- `query_agent.py` - Query Agent (NL to SQL conversion) - [See detailed documentation](./QUERY_AGENT_README.md)
+- `platform_designer.py` - Platform Designer Agent (infrastructure automation) - [See detailed documentation](./PLATFORM_DESIGNER_README.md)
+- `test_query_agent.py` - Comprehensive test suite for Query Agent
 
 ## API Reference
 
