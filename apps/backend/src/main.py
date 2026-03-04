@@ -3,11 +3,22 @@ AI Data Labs - Backend API
 FastAPI application for the AI Data Labs platform.
 """
 
-from fastapi import FastAPI
+import time
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 import logging
 from api.v1 import auth
+from monitoring.metrics import (
+    MetricsMiddleware,
+    update_system_metrics,
+    setup_app_info,
+    API_REQUESTS_TOTAL,
+    record_agent_request,
+    record_db_query,
+    set_db_connections,
+)
+from prometheus_client import generate_latest, REGISTRY
 
 # Configure logging
 logging.basicConfig(
@@ -24,6 +35,10 @@ app = FastAPI(
     docs_url="/api/docs",
     redoc_url="/api/redoc",
 )
+
+# Add monitoring middleware
+app.add_middleware(MetricsMiddleware)
+
 app.include_router(auth.router)
 
 # CORS middleware
@@ -40,6 +55,11 @@ app.add_middleware(
 async def startup_event():
     """Initialize services on startup."""
     logger.info("Starting AI Data Labs API...")
+
+    # Initialize metrics
+    setup_app_info(version="1.0.0", environment="production")
+    logger.info("Prometheus metrics initialized")
+
     # Initialize default admin user
     from auth.service import AuthService
     await AuthService.create_default_admin()
@@ -76,12 +96,25 @@ async def root():
 
 @app.get("/health")
 async def health():
-    """Health check endpoint"""
+    """Comprehensive health check endpoint"""
+    # Update system metrics
+    update_system_metrics()
+
+    # TODO: Check database connectivity when integrated
+    # TODO: Check ClickHouse connectivity when integrated
+    # TODO: Check agent status when agents are running
+
     return {
         "status": "healthy",
+        "timestamp": time.time(),
         "services": {
             "api": "operational",
-            "auth": "operational"
+            "auth": "operational",
+            "database": "pending_integration",
+            "clickhouse": "pending_integration",
+        },
+        "system": {
+            "uptime": "N/A"  # Would need to track startup time
         }
     }
 
@@ -98,6 +131,14 @@ async def status():
             "kafka": "not configured",
         },
     }
+
+
+@app.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint"""
+    # Update system metrics before generating
+    update_system_metrics()
+    return PlainTextResponse(generate_latest(REGISTRY))
 
 
 

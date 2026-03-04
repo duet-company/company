@@ -1,0 +1,149 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  aidatalabs-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "AI Data Labs Platform",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Request Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(aidatalabs_api_requests_total[5m])",
+                "legendFormat": "{{method}} {{endpoint}}"
+              }
+            ],
+            "yaxes": [
+              { "format": "req/s", "label": "Requests/second" },
+              { "format": "short" }
+            ],
+            "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+          },
+          {
+            "id": 2,
+            "title": "Request Duration (p95)",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(aidatalabs_api_request_duration_seconds_bucket[5m]))",
+                "legendFormat": "{{method}} {{endpoint}}"
+              }
+            ],
+            "yaxes": [
+              { "format": "s", "label": "Seconds" },
+              { "format": "short" }
+            ],
+            "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+          },
+          {
+            "id": 3,
+            "title": "Active Agents",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(aidatalabs_agents_active)",
+                "legendFormat": "Active agents"
+              }
+            ],
+            "options": {
+              "reduceOptions": { "values": false, "calcs": ["last"] },
+              "orientation": "auto",
+              "textMode": "value"
+            },
+            "gridPos": { "x": 0, "y": 8, "w": 6, "h": 4 }
+          },
+          {
+            "id": 4,
+            "title": "Error Rate",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "rate(aidatalabs_api_errors_total[5m]) / rate(aidatalabs_api_requests_total[5m])",
+                "legendFormat": "Error rate"
+              }
+            ],
+            "options": {
+              "reduceOptions": { "values": false, "calcs": ["last"] },
+              "orientation": "auto",
+              "textMode": "value",
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 0.05 }
+                ]
+              }
+            },
+            "gridPos": { "x": 6, "y": 8, "w": 6, "h": 4 }
+          },
+          {
+            "id": 5,
+            "title": "System Memory Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "aidatalabs_system_memory_bytes / 1024 / 1024 / 1024",
+                "legendFormat": "Memory used (GB)"
+              }
+            ],
+            "yaxes": [
+              { "format": "GB", "label": "Memory" },
+              { "format": "short" }
+            ],
+            "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 }
+          },
+          {
+            "id": 6,
+            "title": "Database Query Latency",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(aidatalabs_db_query_duration_seconds_bucket[5m]))",
+                "legendFormat": "{{database_type}} {{operation}}"
+              }
+            ],
+            "yaxes": [
+              { "format": "s", "label": "Seconds" },
+              { "format": "short" }
+            ],
+            "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 }
+          }
+        ],
+        "schemaVersion": 36,
+        "version": 1,
+        "refresh": "10s",
+        "time": { "from": "now-1h", "to": "now" },
+        "timepicker": {},
+        "templating": { "list": [] },
+        "annotations": {
+          "list": [
+            {
+              "datasource": "Prometheus",
+              "enable": true,
+              "expr": "changes(aidatalabs_api_errors_total[5m]) > 0",
+              "name": "Errors detected"
+            }
+          ]
+        },
+        "editable": true,
+        "gnetId": null,
+        "graphTooltip": 1,
+        "id": null,
+        "links": [],
+        "panels": [],
+        "schema": true,
+        "style": "dark",
+        "tags": ["aidatalabs", "platform"],
+        "uid": "aidatalabs-dashboard-001",
+        "url": ""
+      }
+    }
