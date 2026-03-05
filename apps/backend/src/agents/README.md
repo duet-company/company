@@ -338,6 +338,137 @@ Standard capabilities for agent discovery:
 - **GENERATION** - Content generation
 - **VALIDATION** - Data validation and verification
 
+## LLM Provider Integration
+
+The framework provides built-in support for multiple LLM providers through a unified interface. The `llm_providers` module offers:
+
+- **ClaudeProvider** - Anthropic Claude API (Claude 3.5 Sonnet, Claude 3 Opus)
+- **GPT4Provider** - OpenAI API (GPT-4, GPT-4 Turbo, GPT-3.5 Turbo)
+- **GLM5Provider** - Zhipu AI API (GLM-4, GLM-5, etc.)
+
+### Basic Usage
+
+```python
+from agents import create_llm_provider, LLMMessage, LLMMessageRole
+
+# Quick creation using environment variables
+provider = create_llm_provider(
+    provider="claude",
+    model="claude-3-5-sonnet-20241022",
+    temperature=0.7,
+    max_tokens=4096,
+)
+
+# Or using configuration
+from agents import LLMProviderConfig, ClaudeProvider
+
+config = LLMProviderConfig(
+    provider="claude",
+    model="claude-3-5-sonnet-20241022",
+    api_key="your-api-key",
+    temperature=0.7,
+    max_tokens=4096,
+)
+provider = ClaudeProvider(config)
+
+await provider.initialize()
+
+messages = [
+    LLMMessage(role=LLMMessageRole.SYSTEM, content="You are a helpful assistant."),
+    LLMMessage(role=LLMMessageRole.USER, content="Hello, how are you?"),
+]
+
+response = await provider.generate(messages)
+print(response.content)
+```
+
+### Streaming Responses
+
+```python
+async for chunk in provider.generate_stream(messages):
+    print(chunk, end="", flush=True)
+```
+
+### Integrating with Agents
+
+Your agent can use an LLM provider like this:
+
+```python
+from agents import BaseAgent, AgentConfig, create_llm_provider
+
+class MyLLMAgent(BaseAgent):
+    def __init__(self, config: AgentConfig):
+        super().__init__(config)
+        self.llm_provider = None
+
+    async def initialize(self) -> None:
+        # Create LLM provider from agent config
+        llm_config = config.llm_provider
+        self.llm_provider = create_llm_provider(
+            provider=llm_config.provider,
+            model=llm_config.model,
+            api_key=llm_config.api_key,
+            temperature=llm_config.temperature,
+            max_tokens=llm_config.max_tokens,
+        )
+        await self.llm_provider.initialize()
+        self.set_status(AgentStatus.READY)
+
+    async def process(self, input_data, metadata=None):
+        messages = [
+            LLMMessage(role=LLMMessageRole.SYSTEM, content="You are a data analyst."),
+            LLMMessage(role=LLMMessageRole.USER, content=input_data),
+        ]
+
+        response = await self.llm_provider.generate(messages)
+        return response.content
+
+    async def shutdown(self) -> None:
+        if self.llm_provider:
+            await self.llm_provider.shutdown()
+        self.set_status(AgentStatus.SHUTDOWN)
+```
+
+### Supported Models
+
+**Claude (Anthropic):**
+- claude-3-5-sonnet-20241022 (default)
+- claude-3-opus-20240229
+- claude-3-haiku-20240307
+
+**GPT-4 (OpenAI):**
+- gpt-4-turbo-preview (default)
+- gpt-4
+- gpt-4-turbo
+- gpt-3.5-turbo
+
+**GLM-5 (Zhipu AI):**
+- glm-4 (default)
+- glm-3-turbo
+
+### Configuration via Environment Variables
+
+For convenience, providers can use environment variables:
+
+- CLAUDE_API_KEY or ANTHROPIC_API_KEY
+- OPENAI_API_KEY
+- ZHIPUAI_API_KEY
+
+Set these in your environment or configure them directly in `AgentConfig.llm_provider`.
+
+### Error Handling
+
+LLM providers raise `AgentExecutionError` on failures:
+
+```python
+try:
+    response = await provider.generate(messages)
+except AgentExecutionError as e:
+    print(f"LLM request failed: {e}")
+```
+
+Rate limiting and API errors are handled with automatic retries based on `config.retry_config`.
+
 ## Error Handling
 
 The framework provides specific error types:
