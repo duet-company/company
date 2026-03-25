@@ -6,19 +6,23 @@ variable "do_token" {
   sensitive   = true
 }
 
+variable "region" {
+  description = "DigitalOcean region"
+  type        = string
+}
+
 variable "droplet_ids" {
-  description = "List of droplet IDs to attach firewall to"
-  type        = list(number)
+  description = "List of droplet IDs to apply firewall to"
+  type        = list(string)
 }
 
 variable "allowed_inbound_rules" {
-  description = "Allowed inbound firewall rules"
+  description = "List of inbound firewall rules"
   type = list(object({
     port_range = string
     protocol   = string
     sources    = list(string)
   }))
-  default = []
 }
 
 variable "tags" {

@@ -1,39 +1,18 @@
-# VPS Instances Module - AI Data Labs
-# Creates and configures DigitalOcean droplets
+# VPS Instances Module
+# Creates DigitalOcean droplets for the Kubernetes cluster and workloads
 
-resource "digitalocean_ssh_key" "default" {
-  name       = "ai-data-labs-${var.environment}"
-  public_key = var.ssh_public_key
-  count      = var.ssh_public_key != "" ? 1 : 0
-}
+resource "digitalocean_droplet" "vps" {
+  count = var.droplet_count
 
-resource "digitalocean_droplet" "control_plane" {
-  image    = "ubuntu-22-04-x64"
-  name     = "${var.project_name}-control-plane-${var.environment}"
-  region   = var.region
-  size     = var.droplet_size
+  name               = "${var.project_name}-${var.environment}-${count.index + 1}"
+  region             = var.region
+  size               = var.droplet_size
+  image              = "ubuntu-24-04-x64"
+  ssh_keys           = var.ssh_key_ids
+  tags               = var.tags
+  monitoring         = true
+  backups            = false
 
-  ssh_keys = concat(
-    var.ssh_key_ids,
-    var.ssh_public_key != "" ? [digitalocean_ssh_key.default[0].id] : []
-  )
-
-  tags = concat(var.tags, ["control-plane"])
-  monitoring = true
-}
-
-resource "digitalocean_droplet" "workers" {
-  count    = var.droplet_count - 1
-  image    = "ubuntu-22-04-x64"
-  name     = "${var.project_name}-worker-${count.index + 1}-${var.environment}"
-  region   = var.region
-  size     = var.droplet_size
-
-  ssh_keys = concat(
-    var.ssh_key_ids,
-    var.ssh_public_key != "" ? [digitalocean_ssh_key.default[0].id] : []
-  )
-
-  tags = concat(var.tags, ["worker"])
-  monitoring = true
+  # Optional cloud-init for additional configuration
+  user_data = var.user_data
 }

@@ -17,15 +17,9 @@ variable "droplet_size" {
 }
 
 variable "ssh_key_ids" {
-  description = "Existing SSH key IDs"
+  description = "List of SSH key IDs"
   type        = list(number)
   default     = []
-}
-
-variable "ssh_public_key" {
-  description = "SSH public key to add"
-  type        = string
-  default     = ""
 }
 
 variable "droplet_count" {
@@ -48,4 +42,10 @@ variable "project_name" {
 variable "environment" {
   description = "Environment"
   type        = string
+}
+
+variable "user_data" {
+  description = "Cloud-init user data script"
+  type        = string
+  default     = ""
 }
