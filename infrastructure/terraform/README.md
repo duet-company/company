@@ -253,7 +253,11 @@ terraform/
 │   │   ├── main.tf
 │   │   ├── variables.tf
 │   │   └── outputs.tf
-│   └── firewall/           # Firewall module
+│   ├── firewall/           # Firewall module
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   └── dns/               # DNS management module
 │       ├── main.tf
 │       ├── variables.tf
 │       └── outputs.tf
