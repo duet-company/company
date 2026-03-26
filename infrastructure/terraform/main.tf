@@ -41,6 +41,25 @@ module "firewall" {
   environment   = var.environment
 }
 
+# DNS Configuration Module
+# NOTE: The domain must be acquired before DNS records become active.
+# This module prepares DNS records for aidatalabs.ai. The root domain points to the control plane.
+# API and App subdomains should be updated to point to a Load Balancer IP when available.
+module "dns" {
+  source = "./modules/dns"
+
+  domain_name = "aidatalabs.ai"
+  a_records = {
+    "@" = module.vps_instances.control_plane_ip
+    # "api" will be set after load balancer is provisioned
+    # "app" will be set after load balancer is provisioned
+  }
+  cname_records = {
+    "grafana" = "aidatalabs.ai"
+    "k8s"     = "aidatalabs.ai"
+  }
+}
+
 # Outputs
 output "droplet_ids" {
   description = "IDs of created droplets"
@@ -55,4 +74,9 @@ output "droplet_ips" {
 output "firewall_id" {
   description = "ID of created firewall"
   value       = module.firewall.firewall_id
+}
+
+output "dns_domain_id" {
+  description = "ID of the managed DNS domain"
+  value       = module.dns.domain_id
 }
