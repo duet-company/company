@@ -8,28 +8,22 @@ from datetime import datetime
 from enum import Enum
 import logging
 
-from .config import AgentConfig
+from .enums import AgentStatus, AgentCapability
+
+# Import AgentConfig lazily to avoid circular import
+_agent_config_loaded = False
+_AgentConfig = None
+
+def _get_agent_config():
+    global _agent_config_loaded, _AgentConfig
+    if not _agent_config_loaded:
+        from .config import AgentConfig
+        _AgentConfig = AgentConfig
+        _agent_config_loaded = True
+    return _AgentConfig
 
 
-class AgentStatus(Enum):
-    """Agent lifecycle status."""
-    UNINITIALIZED = "uninitialized"
-    INITIALIZING = "initializing"
-    READY = "ready"
-    PROCESSING = "processing"
-    ERROR = "error"
-    SHUTTING_DOWN = "shutting_down"
-    SHUTDOWN = "shutdown"
-
-
-class AgentCapability(Enum):
-    """Standard agent capabilities."""
-    QUERY = "query"
-    DESIGN = "design"
-    SUPPORT = "support"
-    ANALYSIS = "analysis"
-    GENERATION = "generation"
-    VALIDATION = "validation"
+# AgentStatus and AgentCapability are now imported from .enums
 
 
 class AgentMessage:
@@ -68,13 +62,16 @@ class BaseAgent(ABC):
     All agents must inherit from this class and implement the required methods.
     """
 
-    def __init__(self, config: AgentConfig):
+    def __init__(self, config):
         """
         Initialize the agent.
 
         Args:
-            config: Agent configuration
+            config: Agent configuration (AgentConfig instance)
         """
+        AgentConfig = _get_agent_config()
+        if not isinstance(config, AgentConfig):
+            raise TypeError(f"config must be AgentConfig instance, got {type(config)}")
         self.config = config
         self.status = AgentStatus.UNINITIALIZED
         self.logger = logging.getLogger(f"agent.{config.name}")

@@ -7,7 +7,8 @@ Provides a centralized registry for managing and discovering agents.
 from typing import Dict, List, Optional, Type
 import logging
 
-from .base import BaseAgent, AgentCapability, AgentType
+from .base import BaseAgent, AgentCapability
+from .config import AgentType
 from .errors import AgentNotRegisteredError, AgentAlreadyRegisteredError
 
 

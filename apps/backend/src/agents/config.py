@@ -8,7 +8,7 @@ from enum import Enum
 import os
 import json
 
-from .base import AgentCapability
+from .enums import AgentType, AgentCapability
 from .errors import AgentConfigError
 
 

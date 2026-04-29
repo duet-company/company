@@ -1,539 +1,378 @@
 # AI Agent Framework
 
-Comprehensive framework for building and managing AI agents in the AI Data Labs platform.
+A comprehensive, production-ready framework for building and managing AI agents with support for:
 
-## Overview
+- **Agent lifecycle management** (initialization, processing, shutdown)
+- **Inter-agent communication** (direct messaging, broadcasting, request/response patterns)
+- **Task queuing and execution** with priority and retry support
+- **Agent registration and discovery** by capability, type, or name
+- **Retry logic and error handling** with configurable backoff
+- **LLM provider integration** (Claude, GPT-4, GLM-5, custom providers)
 
-The AI Agent Framework provides a robust foundation for developing, deploying, and managing AI agents with support for:
-
-- **Agent Lifecycle Management** - Initialize, monitor, and shutdown agents gracefully
-- **Inter-Agent Communication** - Message passing between agents
-- **Task Queuing** - Asynchronous task execution with retry logic
-- **Agent Registry** - Central registry for agent discovery
-- **Error Handling** - Comprehensive error types and recovery
-- **Configuration Management** - Flexible configuration system
-
-## Architecture
+## Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    AI Agent Framework                        │
+│                    Agent Framework                          │
 ├─────────────────────────────────────────────────────────────┤
-│                                                               │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │   BaseAgent  │  │ AgentConfig  │  │  AgentError  │     │
-│  └──────────────┘  └──────────────┘  └──────────────┘     │
-│         ↓                  ↓                  ↓              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │  Lifecycle   │  │  Registry    │  │Communication │     │
-│  │   Manager    │  │              │  │   Channel    │     │
-│  └──────────────┘  └──────────────┘  └──────────────┘     │
-│         ↓                  ↓                  ↓              │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │                   Task Queue                         │  │
-│  └──────────────────────────────────────────────────────┘  │
-│                                                               │
+│  BaseAgent (abstract)                                      │
+│  ├── initialize()     # Setup agent resources              │
+│  ├── process()        # Main processing logic              │
+│  ├── shutdown()       # Cleanup resources                  │
+│  └── send_message()  # Communicate with other agents      │
+├─────────────────────────────────────────────────────────────┤
+│  AgentRegistry (singleton)                                 │
+│  ├── register_agent()       # Register agent instance      │
+│  ├── discover_by_capability() # Find agents by capability │
+│  └── list_all_agents()      # List registered agents      │
+├─────────────────────────────────────────────────────────────┤
+│  CommunicationChannel (singleton)                          │
+│  ├── send()             # Direct messaging                 │
+│  ├── broadcast()        # Broadcast to all agents          │
+│  ├── send_request()     # Request/response pattern         │
+│  └── publish()          # Publish/subscribe pattern        │
+├─────────────────────────────────────────────────────────────┤
+│  TaskQueue (per-agent)                                       │
+│  ├── submit_task()      # Submit task to queue             │
+│  ├── complete_task()    # Mark task as complete            │
+│  └── fail_task()        # Mark task as failed              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ## Quick Start
 
-### 1. Define Your Agent
-
-```python
-from agents import BaseAgent, AgentConfig, AgentCapability
-from typing import Any, Dict, Optional
-
-class MyAgent(BaseAgent):
-    """Custom agent implementation."""
-
-    async def initialize(self) -> None:
-        """Initialize the agent."""
-        self.set_status(AgentStatus.INITIALIZING)
-
-        # Set up LLM connections
-        # Load resources
-        # Validate configuration
-
-        self.set_status(AgentStatus.READY)
-
-    async def process(
-        self,
-        input_data: Any,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> Any:
-        """Process input data."""
-        self.set_status(AgentStatus.PROCESSING)
-
-        # Your agent logic here
-        result = f"Processed: {input_data}"
-
-        self.set_status(AgentStatus.READY)
-        return result
-
-    async def shutdown(self) -> None:
-        """Shutdown the agent."""
-        self.set_status(AgentStatus.SHUTTING_DOWN)
-
-        # Cleanup resources
-        # Close connections
-
-        self.set_status(AgentStatus.SHUTDOWN)
-```
-
-### 2. Configure Your Agent
-
-```python
-from agents import AgentConfig, AgentType, AgentCapability
-
-config = AgentConfig(
-    agent_id="my-agent",
-    name="My Agent",
-    version="1.0.0",
-    agent_type=AgentType.CUSTOM,
-    capabilities=[
-        AgentCapability.QUERY,
-        AgentCapability.ANALYSIS,
-    ],
-    max_concurrent_tasks=5,
-    task_timeout=300,
-)
-```
-
-### 3. Use the Framework
+### 1. Create an Agent
 
 ```python
 import asyncio
-from agents import AgentRegistry, AgentLifecycleManager
-
-async def main():
-    # Create agent
-    config = AgentConfig(agent_id="my-agent", name="My Agent")
-    agent = MyAgent(config)
-
-    # Register agent
-    registry = AgentRegistry.get_instance()
-    registry.register_agent(agent)
-
-    # Initialize agent
-    lifecycle = AgentLifecycleManager()
-    lifecycle.register_agent(agent)
-    await lifecycle.initialize_all()
-
-    # Process tasks
-    result = await agent.process("Hello, Agent!")
-    print(result)
-
-    # Shutdown
-    await lifecycle.shutdown_all()
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-## Components
-
-### BaseAgent
-
-Abstract base class for all agents. Provides:
-
-- **Status Management** - Track agent state through lifecycle
-- **Health Checks** - Monitor agent health
-- **Message Handling** - Receive and respond to messages
-- **Capabilities** - Define agent capabilities for discovery
-
-```python
-from agents import BaseAgent, AgentStatus
+from agents.base import BaseAgent, AgentStatus, AgentCapability
+from agents.config import AgentConfig, AgentType
 
 class MyAgent(BaseAgent):
+    """Custom agent implementation."""
+    
     async def initialize(self) -> None:
-        # Initialize agent
-        pass
-
-    async def process(self, input_data: Any, metadata=None) -> Any:
-        # Process input
-        return result
-
+        """Initialize agent resources."""
+        print(f"Initializing {self.config.name}")
+        self.set_status(AgentStatus.READY)
+    
+    async def process(self, input_data: Any, metadata: Dict[str, Any] = None) -> Any:
+        """Process input data."""
+        self.set_status(AgentStatus.PROCESSING)
+        
+        try:
+            # Your processing logic here
+            result = {
+                "status": "success",
+                "input": str(input_data),
+                "agent": self.config.agent_id,
+            }
+            return result
+        finally:
+            self.set_status(AgentStatus.READY)
+    
     async def shutdown(self) -> None:
-        # Cleanup
-        pass
+        """Cleanup resources."""
+        print(f"Shutting down {self.config.name}")
+        self.set_status(AgentStatus.SHUTDOWN)
 
-    async def health_check(self) -> Dict[str, Any]:
-        # Return health status
-        return {"status": "ready"}
-```
-
-### AgentConfig
-
-Configuration system for agents:
-
-```python
-from agents import AgentConfig, AgentType, LLMProviderConfig
-
+# Create configuration
 config = AgentConfig(
-    agent_id="query-agent",
-    name="Query Agent",
+    agent_id="my_agent_001",
+    name="My Agent",
     version="1.0.0",
-    agent_type=AgentType.QUERY,
+    agent_type=AgentType.CUSTOM,
     capabilities=[AgentCapability.QUERY],
-
-    # LLM configuration
-    llm_provider=LLMProviderConfig(
-        provider="claude",
-        model="claude-3-5-sonnet-20241022",
-        api_key="your-api-key",
-        temperature=0.7,
-        max_tokens=4096,
-    ),
-
-    # Retry configuration
-    max_retries=3,
-    retry_delay=1.0,
-
-    # Resource limits
-    max_concurrent_tasks=5,
-    task_timeout=300,
 )
+
+# Create agent instance
+agent = MyAgent(config)
+
+# Initialize
+asyncio.run(agent.initialize())
+
+# Process data
+result = asyncio.run(agent.process({"test": "data"}))
+print(result)
 ```
 
-### AgentRegistry
-
-Central registry for agent discovery:
+### 2. Register Agent with Registry
 
 ```python
-from agents import AgentRegistry, AgentCapability
+from agents.registry import AgentRegistry
 
+# Get registry instance
 registry = AgentRegistry.get_instance()
 
 # Register agent
 registry.register_agent(agent)
 
-# Get agent
-agent = registry.get_agent("my-agent")
-
-# Discover by capability
+# Discover agents by capability
 query_agents = registry.discover_by_capability(AgentCapability.QUERY)
+print(f"Found {len(query_agents)} query agents")
 
 # List all agents
 all_agents = registry.list_all_agents()
+for agent_info in all_agents:
+    print(f"Agent: {agent_info['name']} ({agent_info['status']})")
 ```
 
-### AgentLifecycleManager
-
-Manage agent lifecycle:
+### 3. Agent Communication
 
 ```python
-from agents import AgentLifecycleManager
+from agents.communication import CommunicationChannel
+from agents.base import AgentMessage
 
-manager = AgentLifecycleManager()
-
-# Register agents
-manager.register_agent(agent1)
-manager.register_agent(agent2)
-
-# Initialize all
-results = await manager.initialize_all()
-
-# Start health monitoring
-await manager.start_health_monitoring()
-
-# Shutdown all
-await manager.shutdown_all()
-```
-
-### CommunicationChannel
-
-Inter-agent messaging:
-
-```python
-from agents import CommunicationChannel, AgentMessage
-
+# Get communication channel
 channel = CommunicationChannel.get_instance()
 
-# Send message
-response = await channel.send(
-    recipient="other-agent",
-    message=AgentMessage(
-        sender="my-agent",
-        content="Hello!",
-        message_type="request",
-    ),
+# Send message from one agent to another
+message = AgentMessage(
+    sender="agent_a",
+    content={"query": "What is the revenue?"},
+    message_type="request",
 )
 
-# Broadcast
-responses = await channel.broadcast(
-    sender="my-agent",
-    content="Notification!",
-    message_type="notification",
+response = asyncio.run(
+    channel.send("agent_b", message)
 )
+print(f"Response: {response}")
 
-# Subscribe to message types
-channel.subscribe("alert", my_handler)
+# Broadcast message to all agents
+broadcast_results = asyncio.run(
+    channel.broadcast(
+        sender="agent_a",
+        content="System update available",
+        message_type="notification",
+    )
+)
+print(f"Broadcast results: {broadcast_results}")
 ```
 
-### TaskQueue
-
-Asynchronous task execution:
+### 4. Task Queue Usage
 
 ```python
-from agents import TaskQueue, TaskPriority
+from agents.task_queue import TaskQueue, TaskPriority
 
-queue = TaskQueue(max_concurrent_tasks=5)
-await queue.start()
+# Each agent has its own task queue
+task_queue = TaskQueue("my_agent_001")
 
-# Enqueue task
-task_id = await queue.enqueue(
-    agent_id="my-agent",
-    function=my_async_function,
-    args=(arg1, arg2),
-    kwargs={"option": value},
+# Submit task
+task_id = task_queue.submit_task(
+    data={"work": "process this"},
     priority=TaskPriority.HIGH,
-    timeout=300,
-    max_retries=3,
+    metadata={"user": "john"},
 )
 
-# Get result
-result = await queue.get_task_result(task_id, timeout=300)
+# Check task status
+task = task_queue.get_task(task_id)
+print(f"Task status: {task.status}")
 
-# Check status
-status = queue.get_task_status(task_id)
-
-# Cancel task
-await queue.cancel_task(task_id)
-
-# List tasks
-tasks = queue.list_tasks(agent_id="my-agent")
-
-await queue.stop()
+# Complete task (usually done inside agent)
+task_queue.complete_task(task_id, {"result": "done"})
 ```
 
-## Agent Status
+## Framework Configuration
 
-Agents transition through these states:
-
-```
-UNINITIALIZED → INITIALIZING → READY → PROCESSING → READY
-                                      ↓
-                                    ERROR
-                                      ↓
-                                   SHUTTING_DOWN → SHUTDOWN
-```
-
-- **UNINITIALIZED** - Agent created but not initialized
-- **INITIALIZING** - Agent is initializing
-- **READY** - Agent ready to process tasks
-- **PROCESSING** - Agent is processing a task
-- **ERROR** - Agent encountered an error
-- **SHUTTING_DOWN** - Agent is shutting down
-- **SHUTDOWN** - Agent has shut down
-
-## Agent Capabilities
-
-Standard capabilities for agent discovery:
-
-- **QUERY** - Execute queries and data retrieval
-- **DESIGN** - Design and infrastructure automation
-- **SUPPORT** - Customer support and assistance
-- **ANALYSIS** - Data analysis and insights
-- **GENERATION** - Content generation
-- **VALIDATION** - Data validation and verification
-
-## LLM Provider Integration
-
-The framework provides built-in support for multiple LLM providers through a unified interface. The `llm_providers` module offers:
-
-- **ClaudeProvider** - Anthropic Claude API (Claude 3.5 Sonnet, Claude 3 Opus)
-- **GPT4Provider** - OpenAI API (GPT-4, GPT-4 Turbo, GPT-3.5 Turbo)
-- **GLM5Provider** - Zhipu AI API (GLM-4, GLM-5, etc.)
-
-### Basic Usage
+Use `AgentFrameworkManager` for easy setup:
 
 ```python
-from agents import create_llm_provider, LLMMessage, LLMMessageRole
+from agents.framework_config import AgentFrameworkManager, FrameworkConfig, setup_agent_framework
 
-# Quick creation using environment variables
-provider = create_llm_provider(
-    provider="claude",
-    model="claude-3-5-sonnet-20241022",
-    temperature=0.7,
-    max_tokens=4096,
+# Create framework configuration
+config = FrameworkConfig(
+    framework=AgentFramework.CUSTOM,
+    enable_lifecycle_management=True,
+    enable_communication=True,
+    enable_task_queue=True,
+    max_concurrent_agents=10,
 )
 
-# Or using configuration
-from agents import LLMProviderConfig, ClaudeProvider
+# Setup framework
+framework = AgentFrameworkManager(config)
+status = framework.initialize_framework()
 
-config = LLMProviderConfig(
-    provider="claude",
-    model="claude-3-5-sonnet-20241022",
-    api_key="your-api-key",
-    temperature=0.7,
-    max_tokens=4096,
-)
-provider = ClaudeProvider(config)
-
-await provider.initialize()
-
-messages = [
-    LLMMessage(role=LLMMessageRole.SYSTEM, content="You are a helpful assistant."),
-    LLMMessage(role=LLMMessageRole.USER, content="Hello, how are you?"),
-]
-
-response = await provider.generate(messages)
-print(response.content)
+print(f"Framework initialized: {status}")
+print(f"Registered agents: {framework.list_agents()}")
 ```
-
-### Streaming Responses
-
-```python
-async for chunk in provider.generate_stream(messages):
-    print(chunk, end="", flush=True)
-```
-
-### Integrating with Agents
-
-Your agent can use an LLM provider like this:
-
-```python
-from agents import BaseAgent, AgentConfig, create_llm_provider
-
-class MyLLMAgent(BaseAgent):
-    def __init__(self, config: AgentConfig):
-        super().__init__(config)
-        self.llm_provider = None
-
-    async def initialize(self) -> None:
-        # Create LLM provider from agent config
-        llm_config = config.llm_provider
-        self.llm_provider = create_llm_provider(
-            provider=llm_config.provider,
-            model=llm_config.model,
-            api_key=llm_config.api_key,
-            temperature=llm_config.temperature,
-            max_tokens=llm_config.max_tokens,
-        )
-        await self.llm_provider.initialize()
-        self.set_status(AgentStatus.READY)
-
-    async def process(self, input_data, metadata=None):
-        messages = [
-            LLMMessage(role=LLMMessageRole.SYSTEM, content="You are a data analyst."),
-            LLMMessage(role=LLMMessageRole.USER, content=input_data),
-        ]
-
-        response = await self.llm_provider.generate(messages)
-        return response.content
-
-    async def shutdown(self) -> None:
-        if self.llm_provider:
-            await self.llm_provider.shutdown()
-        self.set_status(AgentStatus.SHUTDOWN)
-```
-
-### Supported Models
-
-**Claude (Anthropic):**
-- claude-3-5-sonnet-20241022 (default)
-- claude-3-opus-20240229
-- claude-3-haiku-20240307
-
-**GPT-4 (OpenAI):**
-- gpt-4-turbo-preview (default)
-- gpt-4
-- gpt-4-turbo
-- gpt-3.5-turbo
-
-**GLM-5 (Zhipu AI):**
-- glm-4 (default)
-- glm-3-turbo
-
-### Configuration via Environment Variables
-
-For convenience, providers can use environment variables:
-
-- CLAUDE_API_KEY or ANTHROPIC_API_KEY
-- OPENAI_API_KEY
-- ZHIPUAI_API_KEY
-
-Set these in your environment or configure them directly in `AgentConfig.llm_provider`.
-
-### Error Handling
-
-LLM providers raise `AgentExecutionError` on failures:
-
-```python
-try:
-    response = await provider.generate(messages)
-except AgentExecutionError as e:
-    print(f"LLM request failed: {e}")
-```
-
-Rate limiting and API errors are handled with automatic retries based on `config.retry_config`.
-
-## Error Handling
-
-The framework provides specific error types:
-
-```python
-from agents import (
-    AgentError,
-    AgentNotRegisteredError,
-    AgentAlreadyRegisteredError,
-    AgentInitializationError,
-    AgentExecutionError,
-    AgentTimeoutError,
-    AgentCommunicationError,
-    AgentTaskQueueError,
-    AgentConfigError,
-)
-
-try:
-    await agent.process(data)
-except AgentExecutionError as e:
-    logger.error(f"Agent execution failed: {e}")
-    # Handle error
-```
-
-## Testing
-
-Run unit tests:
-
-```bash
-cd apps/backend
-python -m pytest src/agents/tests.py -v
-```
-
-## Best Practices
-
-1. **Always call `super().__init__`** when inheriting from BaseAgent
-2. **Handle all exceptions** in your agent methods
-3. **Use the task queue** for long-running operations
-4. **Implement proper cleanup** in shutdown()
-5. **Set appropriate timeouts** for all async operations
-6. **Use health checks** for monitoring
-7. **Register message handlers** for inter-agent communication
-8. **Follow retry logic** with exponential backoff
 
 ## Examples
 
-See the example agents in the `agents/` directory:
+See `example_framework_usage.py` for comprehensive examples:
 
-- `query_agent.py` - Query Agent (NL to SQL conversion) - [See detailed documentation](./QUERY_AGENT_README.md)
-- `platform_designer.py` - Platform Designer Agent (infrastructure automation) - [See detailed documentation](./PLATFORM_DESIGNER_README.md)
-- `support_agent.py` - Support Agent (24/7 customer assistance)
-- `test_query_agent.py` - Comprehensive test suite for Query Agent
+- **SimpleAgent**: Basic echo agent
+- **EchoAgent**: Agent with message handlers
+- **WorkerAgent**: Agent with task queue processing
+- **Framework Setup**: Complete framework initialization and usage
 
-## API Reference
+Run the example:
+```bash
+python -m agents.example_framework_usage
+```
 
-See the inline documentation for each module:
+## Key Components
 
-- `base.py` - Base agent class
-- `config.py` - Configuration
-- `lifecycle.py` - Lifecycle management
-- `registry.py` - Registry and discovery
-- `communication.py` - Messaging
-- `task_queue.py` - Task execution
-- `errors.py` - Error types
+### BaseAgent
+Abstract base class that all agents must inherit from. Provides:
+- Lifecycle methods: `initialize()`, `process()`, `shutdown()`
+- Status management: `set_status()`, `get_status()`
+- Communication: `send_message()`, `receive_message()`
+- Capability registration: `get_capabilities()`
+
+### AgentConfig
+Configuration class for agents with:
+- Basic info: agent_id, name, version, type
+- LLM configuration: provider, model, API keys
+- Retry configuration: max_retries, delay, backoff
+- Resource limits: max_concurrent_tasks, memory limits
+- Communication settings: queues, timeouts
+
+### AgentRegistry (Singleton)
+Central registry for agent management:
+- Register/unregister agents
+- Discover by capability, type, or name
+- Get agent status and metadata
+- Singleton pattern ensures global access
+
+### CommunicationChannel (Singleton)
+Inter-agent messaging system:
+- Direct messaging (send to specific agent)
+- Broadcasting (send to all agents)
+- Request/response pattern
+- Publish/subscribe pattern
+- Message history and replay
+
+### TaskQueue (Per-Agent)
+Task management for agents:
+- Priority-based task queuing
+- Task status tracking (pending, running, completed, failed)
+- Retry logic with configurable policies
+- Task metadata and results
+
+### LLM Providers
+Built-in support for:
+- **Claude** (Anthropic)
+- **GPT-4** (OpenAI)
+- **GLM-5** (Zhipu AI)
+- **Custom providers** (extend BaseLLMProvider)
+
+## Configuration Files
+
+### Agent Configuration Template
+
+```json
+{
+  "agent_id": "query_agent_001",
+  "name": "Query Agent",
+  "version": "1.0.0",
+  "agent_type": "query",
+  "capabilities": ["query", "analysis"],
+  "llm_provider": {
+    "provider": "claude",
+    "model": "claude-3-5-sonnet-20241022",
+    "api_key": "your-api-key",
+    "temperature": 0.7,
+    "max_tokens": 4096,
+    "timeout": 30
+  },
+  "retry_config": {
+    "max_retries": 3,
+    "retry_delay": 1.0,
+    "backoff_factor": 2.0
+  },
+  "max_concurrent_tasks": 5,
+  "task_timeout": 300,
+  "enable_messaging": true,
+  "message_queue_size": 100,
+  "log_level": "INFO"
+}
+```
+
+## Error Handling
+
+The framework provides comprehensive error types:
+
+- `AgentError` - Base exception for all agent errors
+- `AgentNotRegisteredError` - Agent not found in registry
+- `AgentAlreadyRegisteredError` - Duplicate agent registration
+- `AgentInitializationError` - Initialization failure
+- `AgentExecutionError` - Processing failure
+- `AgentTimeoutError` - Operation timeout
+- `AgentCommunicationError` - Communication failure
+- `AgentTaskQueueError` - Task queue error
+- `AgentConfigError` - Configuration error
+
+## Best Practices
+
+1. **Always inherit from BaseAgent** and implement all abstract methods
+2. **Use agent statuses correctly** - update status during lifecycle transitions
+3. **Handle errors gracefully** - use try/finally and proper error types
+4. **Register agents with registry** for discovery and management
+5. **Use message handlers** for different message types
+6. **Configure retry logic** appropriately for your use case
+7. **Set resource limits** to prevent resource exhaustion
+8. **Log appropriately** - use the agent's logger instance
+9. **Clean up resources** in shutdown() method
+10. **Test with the example agents** before building custom agents
+
+## Testing
+
+Run the example to validate your setup:
+
+```bash
+python -m agents.example_framework_usage
+```
+
+This will test:
+- Agent creation and registration
+- Lifecycle management (initialize, process, shutdown)
+- Inter-agent communication
+- Task queue operations
+- Framework status and discovery
+
+## Advanced Usage
+
+### Custom LLM Provider
+
+```python
+from agents.llm_providers import BaseLLMProvider, LLMResponse
+
+class MyCustomProvider(BaseLLMProvider):
+    """Custom LLM provider implementation."""
+    
+    async def generate(self, messages: List[LLMMessage], **kwargs) -> LLMResponse:
+        # Your implementation here
+        return LLMResponse(
+            content="Generated response",
+            model="my-model",
+            usage={"total_tokens": 100},
+        )
+```
+
+### Message Handlers
+
+```python
+class SmartAgent(BaseAgent):
+    def __init__(self, config):
+        super().__init__(config)
+        self.register_message_handler("query", self.handle_query)
+        self.register_message_handler("status", self.handle_status)
+    
+    async def handle_query(self, message):
+        return await self.process(message.content)
+    
+    async def handle_status(self, message):
+        return await self.health_check()
+```
+
+## Support
+
+For issues or questions:
+1. Check the examples in `example_framework_usage.py`
+2. Review the component documentation in each module
+3. Test with the provided example agents
+4. Check the logs for detailed error information
 
 ## License
 
-MIT License - See LICENSE file
+Part of AI Data Labs platform. All rights reserved.
